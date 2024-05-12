@@ -1,0 +1,480 @@
+---
+title: "Analysis_270424"
+author: "Niamh Moran"
+date: "2024-04-27"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r include=FALSE}
+#install.packages("openxlsx")
+#install.packages('mediation')
+#install.packages("dplyr")
+#install.packages ('vcd')
+#install.packages ('car')
+#install.packages ('scales')
+#install.packages ('ggplot2')
+#install.packages("pwr")
+#install.packages("PMCMRplus")
+
+library (PMCMRplus)
+library(pwr)
+library(car)
+library(vcd)
+library (dplyr)
+library(tidyverse)
+library(ggstats)
+library(openxlsx)
+library (boot)
+library(dplyr)
+library(janitor)
+library(haven)
+library(mediation)
+library (forcats)
+library (scales)
+library (ggplot2)
+library(forcats)
+library(car)
+
+load("/Users/niamhmoran/Desktop/R_WD/GUI/GUI/March_scripts/clean_data_040424.Rdata")
+```
+#Create df_filtered - dropping 'other conditions' from group
+
+```{r}
+#Without Other conditions
+df_filtered <- df %>% filter(group != "Other")
+```
+
+## H1. 
+Autistic children (and autistic children with an ID) will be significantly more likely than TD children to experience 3+ ACEs
+
+First, we should visualise the distributions of ACES across groups. We can use a faceted bar chart for this, and represent the data proportionally.
+```{r}
+ 
+
+df_filtered %>%
+  ggplot(aes(x = ace_category, fill = group, y = after_stat(prop))) +
+  geom_bar(stat = "prop", position = position_dodge(width = 0.9)) +
+  geom_text(
+    aes(label = scales::percent(after_stat(prop), accuracy = 1)),
+    stat = "prop",
+    position = position_dodge(width = 0.9),
+    vjust = -0.5,
+    size = 3
+  ) +
+  scale_y_continuous(labels = scales::percent) +
+  facet_wrap(~ group) +
+  ylab("Proportion as percentage") +
+  xlab("Number of ACEs") +
+  scale_fill_manual(values = c("blue", "lightblue", "darkgreen")) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotating x-axis labels
+
+
+
+```
+
+#Create a contingency table to view distribution
+```{r}
+# Create a contingency table
+contingency_table <- table(df$group, df$ace_category)
+print (contingency_table)
+```
+We can check the more general prediction - autistic children AND autistic children with ID will have more ACES that TD.
+```{r}
+df %>% 
+  filter(group != "Other") %>% # get rid of "other" children
+  mutate(group = fct_collapse(group, ASD_all = c("ASD No ID", "ASD with ID"))) %>% ## Collapse two ASD factor levels
+  mutate(group = fct_drop(group)) %>%  # we need to get rid of the unused factor levels
+  dplyr::select(group, ace_category) %>% # we select our two categorical variables to pipe into the test
+  table() %>% # we create a table for chisq
+  chisq.test() # we run the test
+
+
+#Cramers V is used to calculate effect size statistcial power may be influenced by large sample
+# Adjust the pipeline to get the table for Cramér's V calculation
+table_data <- df %>%
+  filter(group != "Other") %>%
+  mutate(group = fct_collapse(group, ASD_all = c("ASD No ID", "ASD with ID"))) %>%
+  mutate(group = fct_drop(group)) %>%
+  dplyr::select(group, ace_category) %>%
+  table()
+
+
+# Calculate Chi-squared statistics and Cramér's V
+assoc_results <- assocstats(table_data)
+
+print(assoc_results)
+```
+# Test if autistic children without an ID are more likely to expereince ACEs than TD
+```{r}
+df %>% 
+  filter(group == "ASD No ID" | group == "TD") %>% # we select just ASD and TD
+  mutate(group = fct_drop(group)) %>%  # we need to get rid of the unused factor levels
+  dplyr::select(group, ace_category) %>% # we select our two categorical variables to pipe into the test
+  table() %>% # we create a table for chisq
+  chisq.test() # we run the test
+
+#Cramers V is used to calculate effect size statistcial power may be influenced by large sample
+# Adjust the pipeline to get the table for Cramér's V calculation
+table_data <- df %>%
+  filter(group == "ASD No ID" | group == "TD")%>%
+  mutate(group = fct_drop(group))  %>%
+  dplyr::select(group, ace_category) %>%
+  table()
+
+
+# Calculate Chi-squared statistics and Cramér's V
+assoc_results <- assocstats(table_data)
+print(assoc_results)
+
+```
+
+
+
+
+#Testing ASD with ID vs TD for ACEs experienced
+```{r}
+#Fisher's exact test due to low frequency in cells
+
+df %>% 
+  filter(group == "ASD with ID" | group == "TD") %>% # we select just ASD and TD
+  mutate(group = fct_drop(group)) %>%  # we need to get rid of the unused factor levels
+  dplyr::select(group, ace_category) %>% # we select our two categorical variables to pipe into the test
+  table() %>% # we create a table for chisq
+{fisher.test(.)} # Perform Fisher's Exact Test using the table as input
+
+#Cramers V is used to calculate effect size statistcial power may be influenced by large sample
+# Adjust the pipeline to get the table for Cramér's V calculation
+table_data <- df %>%
+  filter(group == "ASD with ID" | group == "TD")%>%
+  mutate(group = fct_drop(group))  %>%
+  dplyr::select(group, ace_category) %>%
+  table()
+
+
+# Calculate Chi-squared statistics and Cramér's V
+assoc_results <- assocstats(table_data)
+print(assoc_results)
+
+```
+
+H1 is supported. Autistic children experience more ACES.  
+
+# H2 SDQ Scores
+#Check for missing values SDQ 2
+```{r}
+#Check for missing values SDQ W2
+
+df_present_w2 <- df %>%
+  filter(present_w2 == TRUE)
+
+#table(df$group, df$w1_main_carer_sdq_emotional, useNA="ifany" )
+table(df_present_w2$group, df_present_w2$w2_main_carer_sdq_emot, useNA="ifany" )
+
+#All NAs are less than 5% per group so no need to delete or impute
+```
+
+H2 TD children who experience 3+ ACEs will be significantly more likely to demonstrate emotional difficulties (as indicated on the SDQ at age 13) than TD children who have experienced 0 ACEs
+```{r}
+#Create a group to compare No ACE TD and High ACE TD
+td_zero_three <- df %>% 
+  filter(group == "TD") %>%
+  mutate(group = fct_drop(group)) %>%  # we need to get rid of the unused factor levels
+  filter(ace_category == "0 ACEs" | ace_category == "3+ ACEs")%>%
+ mutate(ace_category = fct_recode(ace_category,
+                                   "No ACE TD" = "0 ACEs",
+                                   "High ACE TD" = "3+ ACEs"))
+
+#Create a  boxplot to compare distributions
+ggplot(td_zero_three, aes(x = ace_category, y = w2_main_carer_sdq_emot)) +
+  geom_boxplot() +
+  ylab("SDQ Emotional") +
+  xlab("Number of ACEs") 
+
+
+#Create an ANOVA model to check form normality and assumptions of homoegneity 
+summary(aov(w2_main_carer_sdq_emot ~ ace_category, data = td_zero_three ))
+
+# Fit the model
+model <-aov(w2_main_carer_sdq_emot ~ ace_category, data = td_zero_three)
+
+#Create Q plots
+qqnorm(residuals(model))
+qqline(residuals(model), col = "red")
+
+
+# Perform a Shapiro-Wilk test on the residuals to test for normaliuty
+shapiro_test <- shapiro.test(residuals(model))
+print (shapiro_test)
+
+# Calculate Cook's distance for the model 
+cooks_distance <- cooks.distance(model)
+
+# Plot Cook's distance
+plot(cooks_distance, type = "h", ylab = "Cook's Distance", xlab = "Observation Index")
+abline(h = 4/(nrow(td_zero_three)-length(model$coefficients)), col = "red")
+
+# Identify observations with a high Cook's distance
+influential_points <- which(cooks_distance > (4/(nrow(td_zero_three)-length(model$coefficients))))
+
+
+# Perform Levene's test to test for assumptions of homegenity 
+leveneTest(model)
+```
+H2 TD children who experience 3+ ACEs will be significantly more likely to demonstrate emotional difficulties (as indicated on the SDQ at age 13) than TD children who have experienced 0 ACEs
+# Data violates assumptions of homeogenity for TD sample, running a Wlech ANOVA to acocunt for this
+```{r}
+
+welch_anova_result <- oneway.test(w2_main_carer_sdq_emot ~ ace_category, data = td_zero_three)
+model <- lm(w2_main_carer_sdq_emot ~ ace_category, data = td_zero_three)
+
+# Print the results
+print(welch_anova_result)
+summary (model)
+
+gh_results <- gamesHowellTest(w2_main_carer_sdq_emot ~ ace_category, data = td_zero_three)
+print(gh_results)
+
+
+table (td_zero_three$ace_category)
+
+
+# Filter out unwanted levels for gender and then drop unused levels from the factor
+td_zero_three <- td_zero_three %>%
+  filter(w1_study_child_sex %in% c("Male", "Female")) %>%
+  mutate(w1_study_child_sex = fct_drop(w1_study_child_sex))
+
+
+# Fit the model using lm() to include the covariate
+model <- lm(w2_main_carer_sdq_emot ~ ace_category + w1_study_child_sex, data = td_zero_three)
+
+# Use Anova() function from the car package to get a type II or type III ANOVA table
+# This function can handle unequal variances with white.adjust parameter
+welch_anova_result_with_covariate <- Anova(model, type = "II", white.adjust = TRUE)
+
+# View the results
+print(welch_anova_result_with_covariate)
+
+# Assuming the linear model is stored in 'model'
+summary(model)
+
+
+
+
+```
+
+H3 Autistic children who experience 3+ ACEs will be significantly more likely to demonstrate emotional difficulties (as indicated on the SDQ at age 13) than Autitsic children who have experienced 0 ACEs
+```{r}
+#Create ASD Group - No ACE - High ACE
+asd_zero_three <- df %>%
+  mutate(group = fct_collapse(group, ASD_all = c("ASD No ID", "ASD with ID"))) %>%
+  filter(group == "ASD_all") %>%
+  mutate(group = fct_drop(group)) %>%
+  filter(ace_category %in% c("0 ACEs", "3+ ACEs")) %>%
+  mutate(ace_category = fct_recode(ace_category,
+                                   "No ACE ASD" = "0 ACEs",
+                                   "High ACE ASD" = "3+ ACEs"))
+
+#Plot the distribution
+ggplot(asd_zero_three, aes(x = ace_category, y = w2_main_carer_sdq_emot)) +
+  geom_boxplot() +
+  ylab("SDQ Emotional") +
+  xlab("ACE Group") 
+
+
+summary(aov(w2_main_carer_sdq_emot ~   ace_category, data = asd_zero_three ))
+
+
+
+table (asd_zero_three$ace_category)
+
+
+# Fit the model
+model <-aov(w2_main_carer_sdq_emot ~ ace_category, data = asd_zero_three)
+
+#Create the q plots
+qqnorm(residuals(model))
+qqline(residuals(model), col = "red")
+
+# Perform a Shapiro-Wilk test on the residuals
+shapiro_test <- shapiro.test(residuals(model))
+print (shapiro_test)
+
+# Calculate Cook's distance for the model
+cooks_distance <- cooks.distance(model)
+
+# Plot Cook's distance
+plot(cooks_distance, type = "h", ylab = "Cook's Distance", xlab = "Observation Index")
+abline(h = 4/(nrow(asd_zero_three)-length(model$coefficients)), col = "red")
+
+# Identify observations with a high Cook's distance
+influential_points <- which(cooks_distance > (4/(nrow(asd_zero_three)-length(model$coefficients))))
+
+
+# Perform Levene's test
+leveneTest(model)
+
+
+#Assumotions of homegenity were not violated so ANOVA and ANCOVA results will be interpretted
+```
+
+#TD young adults with 3+ACEs will be significantly more liekly to report higher depression scores than TD young adults with 0 ACEs.
+```{r}
+#Plot the distribution
+ggplot(td_zero_three, aes(x = ace_category, y = w4_yp_dep_score)) +
+  geom_boxplot() +
+  ylab("CES-D8 Depression Scores") +
+  xlab("Group") 
+
+# Fit the model
+model <-aov(w4_yp_dep_score ~ ace_category, data = td_zero_three)
+
+qqnorm(residuals(model))
+qqline(residuals(model), col = "red")
+
+# Perform a Shapiro-Wilk test on the residuals
+shapiro_test <- shapiro.test(residuals(model))
+print (shapiro_test)
+
+# Calculate Cook's distance for the model
+cooks_distance <- cooks.distance(model)
+
+# Plot Cook's distance
+plot(cooks_distance, type = "h", ylab = "Cook's Distance", xlab = "Observation Index")
+abline(h = 4/(nrow(td_zero_three)-length(model$coefficients)), col = "red")
+
+# Identify observations with a high Cook's distance
+influential_points <- which(cooks_distance > (4/(nrow(td_zero_three)-length(model$coefficients))))
+
+# Perform Levene's test
+leveneTest(model)
+```
+#Assumptions of homogenity violated - using Wlech ANOVA to acocunt for this
+
+```{r}
+# Assuming the data frame is called td_zero_three and the variables are as stated
+welch_anova_result <- oneway.test(w4_yp_dep_score ~ ace_category, data = td_zero_three)
+
+# Print the results
+print(welch_anova_result)
+summary (welch_anova_result)
+
+gh_results <- gamesHowellTest(w4_yp_dep_score ~ ace_category, data = td_zero_three)
+print(gh_results)
+
+
+# Filter out unwanted levels and then drop unused levels from the factor
+td_zero_three <- td_zero_three %>%
+  filter(w1_study_child_sex %in% c("Male", "Female")) %>%
+  mutate(w1_study_child_sex = fct_drop(w1_study_child_sex))
+
+
+
+# Fit the model using lm() to include the covariate
+model <- lm(w4_yp_dep_score ~ ace_category + w1_study_child_sex, data = td_zero_three)
+
+# Use Anova() function from the car package to get a type II or type III ANOVA table
+# This function can handle unequal variances with white.adjust parameter
+welch_anova_result_with_covariate <- Anova(model, type = "II", white.adjust = TRUE)
+
+# View the results
+print(welch_anova_result_with_covariate)
+
+summary(model)
+
+
+```
+
+#Autitsic young adults with 3+ACEs will be significantly more liekly to report higher depression scores than Autistic young adults with 0 ACEs.
+```{r}
+#Plot the distribution
+ggplot(asd_zero_three, aes(x = ace_category, y = w4_yp_dep_score)) +
+  geom_boxplot() +
+  ylab("CES-D8 Depression Scores") +
+  xlab("Group") 
+
+# Fit the model
+model <-aov(w4_yp_dep_score ~ ace_category, data = asd_zero_three)
+print (model)
+summary (model)
+
+qqnorm(residuals(model))
+qqline(residuals(model), col = "red")
+
+# Perform a Shapiro-Wilk test on the residuals
+shapiro_test <- shapiro.test(residuals(model))
+print (shapiro_test)
+
+# Calculate Cook's distance for the model
+cooks_distance <- cooks.distance(model)
+
+# Plot Cook's distance
+plot(cooks_distance, type = "h", ylab = "Cook's Distance", xlab = "Observation Index")
+abline(h = 4/(nrow(td_zero_three)-length(model$coefficients)), col = "red")
+
+# Identify observations with a high Cook's distance
+influential_points <- which(cooks_distance > (4/(nrow(asd_zero_three)-length(model$coefficients))))
+
+# Perform Levene's test
+leveneTest(model)
+
+#Assumptions of homoegenity not violated - use ANOVA.
+
+```
+
+
+```{r}
+#GENDER breakdown asd group for dep score 
+filtered_data <- asd_zero_three %>%
+  filter(xxwave4 == TRUE & !is.na(w4_yp_dep_score))
+
+# Using table() to create a cross-tabulation
+crosstab <- table(filtered_data$w1_study_child_sex, filtered_data$ace_category)
+
+
+# Print the cross-tabulation
+print(crosstab)
+
+#GENDER breakdown asd group for SDQ E score 
+filtered_data <- asd_zero_three %>%
+  filter(present_w2 == TRUE & !is.na(w2_main_carer_sdq_emot))
+
+# Using table() to create a cross-tabulation
+crosstab <- table(filtered_data$w1_study_child_sex, filtered_data$ace_category)
+
+
+# Print the cross-tabulation
+print(crosstab)
+
+
+#GENDER breakdown TD group for dep score 
+filtered_data <- td_zero_three %>%
+  filter(xxwave4 == TRUE & !is.na(w4_yp_dep_score))
+
+# Using table() to create a cross-tabulation
+crosstab <- table(filtered_data$w1_study_child_sex, filtered_data$ace_category)
+
+
+# Print the cross-tabulation
+print(crosstab)
+
+#GENDER breakdown TD group for SDQ E
+filtered_data <- td_zero_three %>%
+  filter(present_w2 == TRUE & !is.na(w2_main_carer_sdq_emot))
+
+# Using table() to create a cross-tabulation
+crosstab <- table(filtered_data$w1_study_child_sex, filtered_data$ace_category)
+
+
+
+# Print the cross-tabulation
+print(crosstab)
+
+
+```
+
+

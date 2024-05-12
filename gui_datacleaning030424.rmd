@@ -1,0 +1,1205 @@
+---
+title: "GUI_data_cleaning_rmarkdown_1710"
+author: "Niamh Moran"
+date: "2023-10-17"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+options(repos = c(CRAN = "https://cran.rstudio.com/")
+
+
+```
+Install Packages
+
+```{r}
+
+#install.packages("readxl")  
+#install.packages("tidyverse")  
+#install.packages("haven")
+#install.packages("janitor")
+#install.packages("dplyr")
+#install.packages("rmarkdown", dependencies = TRUE)#
+#install.packages("tinytex")
+#tinytex::install_tinytex(force = TRUE)
+
+library(readxl)
+library(tidyverse)
+library(haven)
+library(janitor)
+library(rmarkdown)
+library(haven)
+library (tinytex)
+library (dplyr)
+```
+
+
+#load dataset
+
+```{r Open datasets}
+
+df_1 <- read_sav("GUI_Child_Cohort_Wave_1/GUI_Child_Cohort_Wave_1_Data/Nine_Year_Cohort_Data/SPSS/GUI Data_9YearCohort.sav")
+
+#View(df_1)
+
+df_2 <- read_sav("GUI_Child_Cohort_Wave_2/0020-02 GUI Child Cohort Wave 2_Data/13 year cohort data/SPSS/GUI Data_ChildCohortWave2.sav")
+
+#View(df_2)
+
+
+df_3 <- read_sav("GUI_Child_Cohort_Wave_3/0020-03 GUI Child Cohort Wave 3_Data revised/SPSS/GUI Data_ChildCohortWave3_V1.3.sav")
+
+#View(df_3)
+
+
+df_4 <- read_sav("GUI_Child_Cohort_Wave_4/0020-04 GUI Child Cohort Wave 4_Data/SPSS/0020-04_GUI_Data_ChildCohortWave4.sav")
+
+#View(df_4)
+
+
+
+```
+
+#Clean names so all variables will be in lower case with underscores
+```{r}
+
+
+df_1  <- df_1 %>% 
+  clean_names()
+
+df_2 <- df_2 %>% 
+  clean_names()
+
+df_3 <- df_3 %>% 
+  clean_names()
+
+df_4 <- df_4 %>% 
+  clean_names()
+
+
+
+str (df_3$p2relm_w3)
+
+
+
+```
+
+#Removing columns not relevant to current research
+```{r}
+
+
+df_1 <- df_1 %>% 
+  select (!mma4)
+  
+  
+#info on others in house 
+df_1 <- df_1 %>% 
+  select (!mma5ap3:mma5pesp7)
+
+df_1 <- df_1 %>% 
+  select (!mma5rmp2)
+
+df_1 <- df_1 %>% 
+  select (!mma5rcp2)
+
+#relationship to mother
+df_1 <- df_1 %>% 
+    select (!mma5rmp1)
+
+#info on pregnancy
+df_1 <- df_1 %>% 
+  select (!mmb1:mmb19)
+
+#info on physical health
+df_1 <- df_1 %>% 
+  select (!mmc1:mmc19)
+  
+
+#info on diet
+df_1 <- df_1 %>% 
+  select (!mmd1a:mmd4h)
+
+#info on eats with and body image
+df_1 <- df_1 %>% 
+  select (!mmd5:mmd9)
+
+
+#info on exercise and parent health
+df_1 <- df_1 %>% 
+  select (!mmd10:mmf10)
+
+#info on hobbies
+df_1 <- df_1 %>% 
+  select (!mmg1:mmg6)
+
+#info on childcare
+df_1 <- df_1 %>% 
+  select (!mmj1:costchildcare)
+
+#info on school
+df_1 <- df_1 %>% 
+  select (!mmj7:mmj11)
+df_1 <- df_1 %>% 
+  select (!mmj17)
+
+#info on reading
+df_1 <- df_1 %>% 
+  select (!mmj13:mmj14)
+
+#info on deprivation
+df_1 <- df_1 %>% 
+  select (!mml1a:mml1i)
+
+df_1 <- df_1 %>% 
+  select (!mml3:mml7)
+
+#parents ed
+df_1 <- df_1 %>% 
+  select (!mml37)
+
+#info on accommodation, parent work income and education
+df_1 <- df_1 %>% 
+  select (!mml17:mml32)
+
+ #info on citizenship etc
+df_1 <- df_1 %>% 
+  select (!m_ml38:mmm1)
+
+
+ #info second respondent
+df_1 <- df_1 %>% 
+  select (!fa1:fs14)
+
+ #info on SC computer use
+df_1 <- df_1 %>% 
+  select (!cq9:cq11)
+
+ #info on SC hobbies and chores
+df_1 <- df_1 %>% 
+  select (!cq13_favehobby1:cq20h)
+df_1 <- df_1 %>% 
+  select (!cq21a:cq26c_living3)
+
+#info on parent and child weight
+
+df_1 <- df_1 %>% 
+  select (!int_pc_gcms:int_bmi_scg_rec)
+
+#info on questionnaires completed
+df_1 <- df_1 %>% 
+  select (!pcgmain:kid_mp)
+
+
+
+#Teacher questions
+  
+  df_1 <- df_1 %>% 
+  select (!tc10a:p48b) 
+  
+  
+  df_1 <- df_1 %>% 
+  select (!readclass:mathslsse) 
+  
+   df_1 <- df_1 %>% 
+  select (!tchonself:drum) 
+  
+  df_1 <- df_1 %>% 
+  select (!tc4:tc8) 
+  
+  
+   #Clubs and activities
+  df_1 <- df_1 %>% 
+  select (!mmj6a:mmj16) 
+    
+       #religion
+
+df_1 <- df_1 %>% 
+select (!mmj25:mmk13) 
+      
+    #Neighbourhood variables
+   df_1 <- df_1 %>% 
+  select (!mmm2a:mmm4h)
+   
+    #Accommodation
+   df_1 <- df_1 %>% 
+  select (!mml8:mml16)
+    
+    #Fam in area
+       df_1 <- df_1 %>% 
+    select (!mmm5)
+    
+       
+       #Marital status
+        df_1 <- df_1 %>% 
+  
+  select (!ms14)
+        
+  #Child qs - school/better off other families
+        df_1 <- df_1 %>% 
+  
+  select (!cq1:cq5c)
+    
+  #Child qs
+   df_1 <- df_1 %>% 
+   select (!cq6a:ccs19f)
+    
+  #child's perception of bullying
+   
+      df_1 <- df_1 %>% 
+   select (!ccs20:ccs21b)
+      
+    
+  #Child - siblings
+    df_1 <- df_1 %>% 
+   select (!ccs22:ccs23)
+  
+    #Child talk to re probs
+  
+      df_1 <- df_1 %>% 
+   select (!ccs24a:ccs24g)
+      
+     df_1 <- df_1 %>% 
+   select (!ccs25)
+      
+   #Items on who diagnosed difficulties - general not specific
+  
+      df_1 <- df_1 %>% 
+   select (!mmj23:mmj24)
+      
+      
+    #Piers_Harris
+  
+      df_1 <- df_1 %>% 
+   select (!ph_total_score:ph_happiness)
+          
+      
+      
+    #EAS
+  
+      df_1 <- df_1 %>% 
+   select (!mmh3_ea_sshyness:cesd_tot_scg)   
+
+    #HSD class : Piers Harris
+  
+      df_1 <- df_1 %>% 
+   select (!hsdclass:piers_harris)       
+      
+      #Teacher sdq
+  
+      df_1 <- df_1 %>% 
+   select (!tcsd_qemot:tchonchild)  
+      
+  
+  
+  
+      df_1 <- df_1 %>% 
+   select (!partner)    
+      
+      df_1 <- df_1 %>% 
+   select (!int_type)  
+      
+          df_1 <- df_1 %>% 
+   select (!mmj19a:mmj19f)  
+          
+```
+
+```{r}
+#Removing variables df_2
+
+    
+  
+      df_2 <- df_2 %>% 
+   select (!p1empw2)
+    
+#Others in house
+  df_2 <- df_2 %>% 
+   select (!p2relmw2:pc2b1)
+  
+#Health Insurance - settling in school
+  df_2 <- df_2 %>% 
+   select (!pc2b6:pc2e2a)
+  
+#settling in school and bullying
+  df_2 <- df_2 %>% 
+   select (!pc2e2b:pc2e14)
+  
+#Physical disabilities and conditions
+  
+  df_2 <- df_2 %>% 
+   select (!pc2e15:pc2e17a)
+  
+    df_2 <- df_2 %>% 
+   select (!pc2e18e)
+  
+   #Speech
+    
+    df_2 <- df_2 %>% 
+   select (!pc2e20c:pc2e21a) 
+    
+#Professional support
+     df_2 <- df_2 %>% 
+   select (!pc2e21b:pc2e23)  
+     
+#Books:SES
+     df_2 <- df_2 %>% 
+   select (!pc2e24:pc2g41j) 
+     
+#SC qs
+  
+ df_2 <- df_2 %>% 
+   select (!sc2d17:sc2s28) 
+ 
+ #Child qs
+ 
+  df_2 <- df_2 %>% 
+   select (!cq2q1b:cq2mp1)
+  
+  #Piers Harris
+   df_2 <- df_2 %>% 
+   select (!w2ph_totalscore:w2rangehap) 
+   
+
+#Pianta - child BMI
+   df_2 <- df_2 %>% 
+   select (!w2pianta_conflict_pcg:w2intchildbmi_rec) 
+  
+#Income - principal
+   df_2 <- df_2 %>% 
+   select (!w2equivinc:w2prin) 
+   
+#Principal on
+    df_2 <- df_2 %>% 
+   select (!p2q1:matage) 
+    
+      df_2 <- df_2 %>% 
+   select (!pc2h1:pc2j2) 
+      
+   
+  df_2 <- df_2 %>% 
+   select (!pc2j3a:pc2j4f)  
+  
+    df_2 <- df_2 %>% 
+   select (!pc2s23:sc2d15)  
+  
+      
+    df_2 <- df_2 %>% 
+   select (!w2hsdclass:w2drt)
+    
+        
+    df_2 <- df_2 %>% 
+   select (!pc2s12)
+    
+    
+     df_2 <- df_2 %>% 
+   select (!pcgstatph2:w2partner)
+     
+   df_2 <- df_2 %>% 
+   select (!pc2b2:pc2b5yr)
+   
+      df_2 <- df_2 %>% 
+   select (!pc2e17b)
+      
+         df_2 <- df_2 %>% 
+   select (!pc2e17c)
+         
+    df_2 <- df_2 %>% 
+   select (!pc2e17e)
+    
+     df_2 <- df_2 %>% 
+   select (!pc2e17g)
+     
+
+   
+     df_2 <- df_2 %>% 
+   select (!pc2e17i)
+     
+     df_2 <- df_2 %>% 
+   select (!pc2e17j)
+     
+     df_2 <- df_2 %>% 
+   select (!pc2e15k)
+     
+       df_2 <- df_2 %>% 
+   select (!pc2e20b)
+   
+   
+     
+     
+```
+
+#Wave 3 data cleaning - removing variables not relevant for study
+```{r}
+
+   
+  
+    
+  #P1 emplpym
+    df_3 <- df_3 %>% 
+   select (!p1emp_w3)
+    
+    
+      df_3 <- df_3 %>% 
+   select (!p2emp_w3:pc3b4c)
+      
+     df_3 <- df_3 %>% 
+   select (!pc3b2g:pc3d5a)
+  
+     #parent qs
+  df_3 <- df_3 %>% 
+   select (!pc3d7d1:pc3j18)
+   
+       #child ed qs
+  df_3 <- df_3 %>% 
+   select (!cq3b1d:cq3b8aq2)    
+  
+  #sc questions
+    df_3 <- df_3 %>% 
+   select (!pc3j20:sc3d21b)  
+    
+      #sc questions
+    df_3 <- df_3 %>% 
+   select (!sc3d21c:sc3s35e) 
+    
+    
+    #child_ed - principal
+    df_3 <- df_3 %>% 
+   select (!cq3a1:p3q30b)  
+    
+     #support
+    df_3 <- df_3 %>% 
+   select (!pc3d7a1:pc3d7c2)  
+  
+      #CAO
+    df_3 <- df_3 %>% 
+   select (!cognitive_naming_total:accept_subar)  
+    
+      df_3 <- df_3 %>% 
+   select (!pcgstatph3:p1relc_w3)
+      
+
+      
+       df_3 <- df_3 %>% 
+   select (!pc3b4d)
+  
+df_3 <- df_3 %>% 
+   select (!pc3b2e:pc3b5f)
+
+    df_3 <- df_3 %>% 
+   select (!pc3d5b)
+    
+    df_3 <- df_3 %>% 
+   select (!pc3d5c)
+    
+        df_3 <- df_3 %>% 
+   select (!pc3d5e)
+        
+        df_3 <- df_3 %>% 
+   select (!pc3d3f)
+        
+       df_3 <- df_3 %>% 
+   select (!pc3d5g)
+  
+  
+  
+  
+         
+         
+      
+```
+
+#Wave 4 - renaming variables not relevant for study
+```{r}
+#wave_4
+df_4 <- df_4 %>% 
+select (!p3age_w4:pc4xa6)  
+
+#wave_4
+df_4 <- df_4 %>% 
+select (!cq4hc1:cq4a10)  
+
+df_4 <- df_4 %>% 
+select (!cq4a12a:cq4a17c2)  
+
+
+df_4 <- df_4 %>% 
+select (!cq4a17c3:cq4a17f6) 
+
+df_4 <- df_4 %>% 
+select (!cq4a21:cq4d1) 
+
+df_4 <- df_4 %>% 
+select (!cq4d7:cq4j5c)
+
+df_4 <- df_4 %>% 
+select (!w4intchildkgms:w4cq_openness)
+
+df_4 <- df_4 %>% 
+select (!pc4g15e:w4cq_energyfatigue_tot)
+
+
+df_4 <- df_4 %>% 
+select (!w4cq_proactive_tot:w4pc_das)
+
+df_4 <- df_4 %>% 
+select (!w4fastclasspcg:w4fastotf)
+
+df_4 <- df_4 %>% 
+select (!w4intpcgcms:w4intchildcms)
+
+
+df_4 <- df_4 %>% 
+select (!cq4k0:cq4sg2)
+
+df_4 <- df_4 %>% 
+select (!cq4sh1:cq4sh8)
+
+df_4 <- df_4 %>% 
+select (!cq4sn1a:cq4sn7)
+
+df_4 <- df_4 %>% 
+select (!pc4e2:pc4g15d)
+
+df_4 <- df_4 %>% 
+select (!w4cestot_pcg:w4cesd_pcg)
+
+df_4 <- df_4 %>% 
+select (!w4intchild_wc)
+
+df_4 <- df_4 %>% 
+select (!hsdclass_w4:w4ypsens)
+
+
+df_4 <- df_4 %>% 
+select (!w4partner:p1sex_w4)
+
+
+df_4 <- df_4 %>% 
+select (!pcgstatph4:cq4sj11d)
+
+
+df_4 <- df_4 %>% 
+select (!pc4b1:pc4e1)
+
+df_4 <- df_4 %>% 
+select (!p2residentw4)
+
+df_4 <- df_4 %>% 
+select (!xxwave:w4cq_emotional_well_being_tot)
+
+df_4 <- df_4 %>% 
+select (!w4cq_selfesteem_total)
+
+
+
+```
+
+#Rename variables for demographics
+```{r}
+
+library(dplyr)
+
+#This variable is based on parent report - original label refers to person 2. On the original questionnaire it said enter details for study child as person 2
+df_1 <- df_1 %>%
+
+rename (study_child_gender = mma5ap2) 
+df_1 <- df_1 %>% relocate (id,study_child_gender )
+
+
+
+
+```
+
+
+#Rename Variables for groups wave 1
+```{r}
+df_1 <- df_1 %>%
+  rename(w1_dyslexia = mmj22a, w1_adhd = mmj22b, w1_asd = mmj22c, w1_speech_lang_diff = mmj22e, w1_dyspraxia = mmj22f, w1_slow_progress = mmj22g, w1_other_difficulty = mmj22h)
+```
+
+#Rename variables for ACEs wave 1
+```{r}
+  df_1 <- df_1 %>%
+  rename( w1_death_of_parent = mmh1a, w1_death_of_close_family_member = mmh1b, w1_death_of_close_friend = mmh1c, w1_divorce_separation_parents = mmh1d, w1_moving_house = mmh1e, w1_moving_country = mmh1f, w1_stay_in_foster_or_residential_care = mmh1g, w1_serious_illness_injury = mmh1h, w1_serious_illness_injury_of_family_member = mmh1i,w1_drug_taking_alcoholism_immediate_family = mmh1j, w1_mental_disorder_family = mmh1k, w1_conflict_between_parents = mmh1l ,  w1_parent_in_prison = mmh1m ,   w1_bullied_in_last_year = mmj18, w1_difficulty_making_ends_meet = mml2, w1_main_carer_sdq_emotional = mmh2_sd_qemot, w1_main_carer_sdq_conduct = mmh2_sd_qcond, w1_main_carer_sdq_peer = mmh2_sd_qpeer, w1_main_carer_sdq_prosocial = mmh2_sd_qpro,
+         w1_main_carer_sdq_total = mmh2_sd_qtot)
+```
+
+#Replace NAs for ACEs Wave 1
+```{r}
+df_1 <- df_1 %>% 
+  replace_na(list(w1_death_of_parent =0, w1_death_of_close_family_member = 0, w1_death_of_close_friend = 0, w1_divorce_separation_parents = 0, w1_moving_house = 0, w1_moving_country = 0, w1_stay_in_foster_or_residential_care = 0, w1_serious_illness_injury = 0, w1_serious_illness_injury_of_family_member = 0, w1_drug_taking_alcoholism_immediate_family = 0, w1_mental_disorder_family = 0, w1_conflict_between_parents = 0 ,  w1_parent_in_prison = 0 ,   w1_bullied_in_last_year = 0, w1_difficulty_making_ends_meet = 0 ))
+```
+
+#NEGLECTFUL_PARENT_STYLE, Making Ends Meet  & Bullying W1 - Make Binary
+```{r}
+
+df_1 <- df_1 %>%
+  mutate(
+    parentstylem = ifelse(is.na(parentstylem), 0, parentstylem),
+    parentstyled = ifelse(is.na(parentstyled), 0, parentstyled),
+    parentstylemp = ifelse(is.na(parentstylemp), 0, parentstylemp),
+    neglectful_parent_style = ifelse(parentstylem == 4 | parentstyled == 4 | parentstylemp == 4, 1, 0) )
+
+#Check variable
+table (df_1$neglectful_parent_style)
+
+#Make Bullying Binary
+df_1 <- df_1 %>%
+mutate(w1_bullied_in_last_year_binary = as.integer(w1_bullied_in_last_year == 1))
+#Check variable
+table (df_1$w1_bullied_in_last_year_binary)
+
+
+
+df_1 <- df_1 %>%
+  mutate( w1_difficulty_making_ends_meet_binary = ifelse(w1_difficulty_making_ends_meet %in% c(1, 2, 3), 1, 0))
+#Check variable
+table(df_1$w1_difficulty_making_ends_meet_binary)
+```
+
+#Rename Variables for groups wave 2 - ASD was measured in two variables at this wave: pc2e15d E15d. Autism Spectrum Disorders (e.g. Autism, Aspergers syndrome) and pc2e16d E16d. Has Autism Spectrum Disorders been diagnosed by a medical professional?
+```{r}
+#Rename variables
+df_2 <- df_2 %>%
+  rename(w2_specific_learning_disability = pc2e16b, w2_emotional_behavioural_disorders = pc2e15e, w2_asd = pc2e15d, w2_asd_diagnosed_professional = pc2e16d, age_child_diagnosed_asd = pc2e17d, w2_speech_lang_diff = pc2e15g, w2_slow_progress = pc2e15i, w2_other_difficulty = pc2e15j, w2_general_learning_disability = pc2e15c, w2_general_learning_disability_diagnosed_professional = pc2e16c,w2_emotional_behavioural_disorders = pc2e15e, w2_emotional_behavioural_disorders_diagnosed_professional = pc2e16e, w2_speech_lang_diff_diagnosed_proffesional = pc2e16g, w2_slow_progress_diagnosed_professional = pc2e16i, w2_other_difficulty_diagnosed_professional = pc2e16j, w2_main_carer_sdq_emot = w2pcd2_sdqemot, w2_main_carer_sdq_conduct = w2pcd2_sdqcond, w2_main_carer_sdq_hyper = w2pcd2_sdqhyper, w2_main_carer_sdq_peer = w2pcd2_sdqpeer, w2_main_carer_sdq_pro = w2pcd2_sdqpro, w2_main_carer_sdq_tot = w2pcd2_sdqtot)
+
+
+#Mutate variables to join
+df_2 <- df_2 %>%
+  mutate(
+    w2_specific_learning_disability_combined = ifelse(is.na(w2_specific_learning_disability) | is.na(w2_speech_lang_diff_diagnosed_proffesional), 0, as.integer(w2_specific_learning_disability == 1 | w2_speech_lang_diff_diagnosed_proffesional == 1)),
+   w2_asd_combined = ifelse(is.na(w2_asd) | is.na(w2_asd_diagnosed_professional), 0, as.integer(w2_asd == 1 | w2_asd_diagnosed_professional == 1)),
+    w2_em_behavioural_disorders_combined = ifelse(is.na(w2_emotional_behavioural_disorders) | is.na(w2_emotional_behavioural_disorders_diagnosed_professional), 0, as.integer(w2_emotional_behavioural_disorders == 1 | w2_emotional_behavioural_disorders_diagnosed_professional == 1)),
+    w2_speech_lang_diff_combined = ifelse(is.na(w2_asd) | is.na(w2_speech_lang_diff_diagnosed_proffesional), 0, as.integer(w2_asd == 1 | w2_speech_lang_diff_diagnosed_proffesional == 1)),
+    w2_slow_progress_combined = ifelse(is.na(w2_slow_progress) | is.na(w2_slow_progress_diagnosed_professional), 0, as.integer(w2_slow_progress == 1 | w2_slow_progress_diagnosed_professional == 1)),
+    w2_general_learning_disability_combined = ifelse(is.na(w2_general_learning_disability) | is.na(w2_general_learning_disability_diagnosed_professional), 0, as.integer(w2_general_learning_disability == 1 | w2_general_learning_disability_diagnosed_professional == 1)),
+    w2_other_condition_disability_combined = ifelse(is.na(w2_other_difficulty) | is.na(w2_other_difficulty_diagnosed_professional), 0, as.integer(w2_other_difficulty == 1 | w2_other_difficulty_diagnosed_professional == 1))
+  )
+  
+    
+
+
+#Check ASD Variable
+table (df_2$w2_asd_combined)
+
+```
+
+#Rename Variables for groups wave 3 - Question at wave 3 for general learning disability phrased differently to wave 1 - uses intellectual disability insrtead. Of not intellectual disability was not measured at wave 1
+
+```{r}
+#Rename Group Variables
+df_3 <- df_3 %>%
+   rename(w3_asd = pc3d3d,age_asd_diagnosed_w3 = pc3d5d,w3_emotional_behavioural_disorders = pc3d3e,w3_speech_lang_diff = pc3d3g, w3_slow_progress = pc3d3i, w3_other_difficulty = pc3d3j,w3_general_intellectual_disability = pc3b2d, w3_general_intellectual_disability_diagnosed_professional = pc3b5d, w3xxwave1 = xxwave1,  w3xxwave2 = xxwave2,  w3_specific_learning_disability = pc3d3b, w3_specific_learning_disability_diagnosed_proffesional = pc3d4b, w3_general_learning_disability = pc3d3c, w3_general_learning_disability_diagnosed_by_proffesional = pc3d4c)
+
+
+
+#Mutate variables to join
+df_3 <- df_3 %>%
+  mutate(
+    w3_general_intellectual_disability_combined = ifelse(is.na(w3_general_intellectual_disability) | is.na(w3_general_intellectual_disability_diagnosed_professional), 0, as.integer(w3_general_intellectual_disability == 1 | w3_general_intellectual_disability_diagnosed_professional == 1)),
+    w3_specific_learning_disability_combined = ifelse(is.na(w3_specific_learning_disability) | is.na(w3_specific_learning_disability_diagnosed_proffesional), 0, as.integer(w3_specific_learning_disability == 1 | w3_specific_learning_disability_diagnosed_proffesional == 1)),
+    w3_general_learning_disability_combined = ifelse(is.na(w3_general_learning_disability) | is.na(w3_general_learning_disability_diagnosed_by_proffesional), 0, as.integer(w3_general_learning_disability == 1 | w3_general_learning_disability_diagnosed_by_proffesional == 1))
+  )
+
+#Check Variables
+table (df_joined$w3_asd)
+table (df_3$w3_general_intellectual_disability_combined)
+```
+
+#Rename demographic and depression variables Wave 4
+```{r}
+
+df_4 <- df_4 %>%
+   rename( w4_yp_age = p2age_w4, w4_yp_sex = p2sex_w4, w4_yp_dep_status = w4cesd_yp, w4_yp_dep_score = w4cestot_yp)
+
+
+
+```
+# Perform full joins
+```{r}
+df_joined <- full_join(df_1, df_2, by = "id")
+df_joined <- full_join(df_joined, df_3, by = "id")
+df_joined <- full_join(df_joined, df_4, by = "id")
+ 
+
+```
+
+#Create asd_any_wave
+```{r}
+df_joined %>% 
+  filter(w1_asd == 1 | w2_asd_combined == 1  | w3_asd == 1 )
+
+
+
+df_joined <- df_joined %>%
+  mutate(asd_any_wave = as.integer(w1_asd == 1 | w2_asd_combined == 1 | w3_asd == 1))
+
+
+
+df_joined <- df_joined %>%
+  mutate(asd_any_wave = as.integer(!is.na(asd_any_wave) & asd_any_wave == 1))
+
+print (df_joined$asd_any_wave)
+table (df_joined$asd_any_wave)
+
+
+# Step 1: Filter df_joined for children with asd_any_wave == 1 and get their IDs
+asd_ids <- df_joined %>%
+  filter(asd_any_wave == 1) %>%
+  select(id) %>%
+  pull(id)
+
+# Step 2: Check presence in each dataframe and count
+count_asd_presence <- function(df, ids) {
+  sum(df$id %in% ids, na.rm = TRUE)
+}
+
+presence_counts_overall_asd <- data.frame(
+  count_in_df_1 = count_asd_presence(df_1, asd_ids),
+  count_in_df_2 = count_asd_presence(df_2, asd_ids),
+  count_in_df_3 = count_asd_presence(df_3, asd_ids),
+  count_in_df_4 = count_asd_presence(df_4, asd_ids)
+)
+
+# View the results
+print(presence_counts_overall_asd)
+```
+
+
+#Create overall_intellectual_disability
+```{r}
+
+# Rename the column
+df_joined <- df_joined %>% 
+  rename(overall_intellectual_disability = w3_general_intellectual_disability_combined)
+
+# Convert the column to a binary integer
+
+df_joined <- df_joined %>%
+  mutate(overall_intellectual_disability = ifelse(is.na(overall_intellectual_disability), 0, as.integer(overall_intellectual_disability == 1)))
+
+
+table (df_joined$overall_intellectual_disability)
+
+
+
+```
+
+#Create variables for ASD with and without ID
+```{r}
+df_joined <- df_joined %>%
+  mutate(asd_and_intellectual_disability_combined = as.integer(asd_any_wave == 1 & overall_intellectual_disability == 1,na.rm = TRUE ))
+
+
+table (df_joined$asd_and_intellectual_disability_combined)
+
+
+df_joined <- df_joined %>%
+  mutate(asd_no_intellectual_disability = as.integer(asd_any_wave == 1 & overall_intellectual_disability != 1, na.rm = TRUE))
+
+print (df_joined$asd_no_intellectual_disability)
+
+# View the changes 
+table (df_joined$asd_no_intellectual_disability)
+
+table (df_joined$asd_any_wave)
+
+table (df_joined$asd_and_intellectual_disability_combined)
+
+
+# Extract IDs where asd_and_intellectual_disability_any_wave is 'yes' 
+ids_with_asd_and_int_dis <- df_joined %>%
+  filter(asd_and_intellectual_disability_combined == 1) %>%
+  select(id) %>%
+  pull()
+
+
+
+asd_and_intellectual_disability_count_in_df_1 <- sum(df_1$id %in% ids_with_asd_and_int_dis, na.rm = TRUE)
+asd_and_intellectual_disability_count_in_df_2 <- sum(df_2$id %in% ids_with_asd_and_int_dis, na.rm = TRUE)
+asd_and_intellectual_disability_count_in_df_3 <- sum(df_3$id %in% ids_with_asd_and_int_dis, na.rm = TRUE)
+asd_and_intellectual_disability_count_in_df_4 <- sum(df_4$id %in% ids_with_asd_and_int_dis, na.rm = TRUE)
+
+# Print the counts
+print(paste("ASD+ID Count in df_1:", asd_and_intellectual_disability_count_in_df_1))
+print(paste("ASD+ID Count in df_2:", asd_and_intellectual_disability_count_in_df_2))
+print(paste("ASD+ID Count in df_3:", asd_and_intellectual_disability_count_in_df_3))
+print(paste("ASD+ID Count in df_4:", asd_and_intellectual_disability_count_in_df_4))
+
+
+
+
+# Extract IDs where asd_and_no_intellectual_disability_any_wave is yes
+ids_with_asd_no_ID <- df_joined %>%
+  filter(asd_no_intellectual_disability == 1) %>%
+  select(id) %>%
+  pull()
+
+
+asd_and_no_intellectual_disability_count_in_df_1 <- sum(df_1$id %in% ids_with_asd_no_ID, na.rm = TRUE)
+asd_and_no_intellectual_disability_count_in_df_2 <- sum(df_2$id %in% ids_with_asd_no_ID , na.rm = TRUE)
+asd_and_no_intellectual_disability_count_in_df_3 <- sum(df_3$id %in% ids_with_asd_no_ID , na.rm = TRUE)
+asd_and_no_intellectual_disability_count_in_df_4 <- sum(df_4$id %in% ids_with_asd_no_ID , na.rm = TRUE)
+
+# Print the counts
+print(paste("ASD Count in df_1:", asd_and_no_intellectual_disability_count_in_df_1))
+print(paste("ASD Count in df_2:", asd_and_no_intellectual_disability_count_in_df_2))
+print(paste("ASD Count in df_3:", asd_and_no_intellectual_disability_count_in_df_3))
+print(paste("ASD Count in df_4:", asd_and_no_intellectual_disability_count_in_df_4))
+```
+
+#Create control group - Neurotypical
+```{r}
+
+# Replace NA with 0 and convert to binary for the specified variables
+df_joined <- df_joined %>%
+  mutate(
+    w1_dyslexia = ifelse(is.na(w1_dyslexia), 0, as.integer(w1_dyslexia == 1)),
+    w1_adhd = ifelse(is.na(w1_adhd), 0, as.integer(w1_adhd == 1)),
+    w1_dyspraxia = ifelse(is.na(w1_dyspraxia), 0, as.integer(w1_dyspraxia == 1)),
+    w1_slow_progress = ifelse(is.na(w1_slow_progress), 0, as.integer(w1_slow_progress == 1)),
+    w3_emotional_behavioural_disorders = ifelse(is.na(w3_emotional_behavioural_disorders), 0, as.integer(w3_emotional_behavioural_disorders == 1)),
+    w3_slow_progress = ifelse(is.na(w3_slow_progress), 0, as.integer(w3_slow_progress == 1)),
+     w3_general_learning_disability_combined = ifelse(is.na(w3_general_learning_disability_combined), 0, as.integer(w3_general_learning_disability_combined == 1)),
+    w3_specific_learning_disability_combined = ifelse(is.na(w3_specific_learning_disability_combined), 0, as.integer(w3_specific_learning_disability_combined == 1)),
+     w2_other_condition_disability_combined = ifelse(is.na( w2_other_condition_disability_combined), 0, as.integer( w2_other_condition_disability_combined == 1)),    w2_general_learning_disability_combined = ifelse(is.na( w2_general_learning_disability_combined), 0, as.integer( w2_general_learning_disability_combined == 1)), w2_slow_progress_combined = ifelse(is.na( w2_slow_progress_combined), 0, as.integer( w2_slow_progress_combined == 1)), 
+w2_em_behavioural_disorders_combined = ifelse(is.na(  w2_em_behavioural_disorders_combined), 0, as.integer(  w2_em_behavioural_disorders_combined == 1)),  w2_specific_learning_disability_combined = ifelse(is.na(  w2_specific_learning_disability_combined), 0, as.integer(  w2_specific_learning_disability_combined== 1)),
+    )
+    
+
+
+df_joined <- df_joined %>%
+  mutate(neurotypical = as.integer(
+    asd_any_wave != 1 &
+    overall_intellectual_disability != 1 &
+    w1_dyslexia != 1 &
+    w1_dyspraxia != 1 &
+    w1_adhd != 1 &
+    w1_slow_progress != 1 &
+    w2_specific_learning_disability_combined != 1 &
+    w2_em_behavioural_disorders_combined != 1 &
+    w2_slow_progress_combined != 1 &
+    w2_general_learning_disability_combined != 1 &
+    w2_other_condition_disability_combined != 1 &
+    w3_specific_learning_disability_combined != 1 &
+    w3_general_learning_disability_combined != 1 &
+    w3_emotional_behavioural_disorders != 1 &
+    w3_slow_progress != 1))
+
+
+
+table(df_joined$neurotypical)
+
+
+
+# Extract ID and neurotypical status
+neurotypical_df <- df_joined %>%
+  select(id, neurotypical)
+
+
+# Merge with df_1 to df_4
+df_1 <- left_join(df_1, neurotypical_df, by = "id")
+df_2 <- left_join(df_2, neurotypical_df, by = "id")
+df_3 <- left_join(df_3, neurotypical_df, by = "id")
+df_4 <- left_join(df_4, neurotypical_df, by = "id")
+
+
+df_1 <- df_1 %>%
+  rename(w1_neurotypical = neurotypical)
+
+df_2 <- df_2 %>%
+  rename(w2_neurotypical = neurotypical)
+
+df_3 <- df_3 %>%
+  rename(w3_neurotypical = neurotypical)
+
+df_4 <- df_4 %>%
+  rename(w4_neurotypical = neurotypical)
+
+
+#View variables
+table (df_1$w1_neurotypical)
+
+table (df_2$w2_neurotypical)
+
+table (df_3$w3_neurotypical)
+table (df_4$w4_neurotypical)
+
+df_joined <- df_joined %>%
+  left_join(df_1 %>% select(id, w1_neurotypical), by = "id") %>%
+  left_join(df_2 %>% select(id, w2_neurotypical), by = "id") %>%
+  left_join(df_3 %>% select(id, w3_neurotypical), by = "id") %>%
+  left_join(df_4 %>% select(id, w4_neurotypical), by = "id")
+
+head(df_joined)
+
+
+```
+#Creation of ACE variable
+```{r}
+df_joined %>% 
+  count(w1_death_of_parent)
+df_joined %>% 
+count (w1_death_of_close_family_member)
+df_joined %>% 
+  count(w1_death_of_close_friend)
+df_joined %>% 
+count (w1_divorce_separation_parents)
+df_joined %>% 
+count (w1_moving_house)
+df_joined %>% 
+  count(w1_moving_country)
+df_joined %>% 
+count (w1_stay_in_foster_or_residential_care)
+df_joined %>% 
+  count(w1_serious_illness_injury)
+df_joined %>% 
+count (w1_serious_illness_injury_of_family_member)
+df_joined %>% 
+  count(w1_drug_taking_alcoholism_immediate_family)
+df_joined %>% 
+count (w1_mental_disorder_family)
+df_joined %>% 
+count (w1_conflict_between_parents)
+df_joined %>% 
+count (w1_parent_in_prison)
+df_joined %>% 
+count (w1_difficulty_making_ends_meet_binary)
+df_joined %>% 
+count (neglectful_parent_style)
+df_joined %>% 
+count (w1_bullied_in_last_year_binary)
+
+
+#ACES 
+## 1. Bullying 2. Mental Health Disorder Immediate Family 3. Neglectful Parenting Style 4. Parental Separation/ Divorce 5.Drug taking/alcoholism in the immediate family,
+## 6. Parent in prison 7. death of a parent, 8.Death of a close family member 9. Stay in foster/residential care, 10.Serious illness/injury 11. Conflict between parents 11.Difficulty_making_ends_meet
+
+
+
+df_joined <- df_joined %>%
+  mutate_at(vars(w1_bullied_in_last_year_binary,
+                 w1_mental_disorder_family,
+                 w1_death_of_parent,
+                 neglectful_parent_style,
+                 w1_parent_in_prison,
+                 w1_conflict_between_parents,
+                 w1_drug_taking_alcoholism_immediate_family,
+                 w1_stay_in_foster_or_residential_care,
+                 w1_death_of_close_family_member,
+                 w1_divorce_separation_parents,
+                 w1_serious_illness_injury,
+                 w1_difficulty_making_ends_meet_binary),
+            as.integer)
+
+
+
+
+
+
+df_joined <- df_joined %>%
+  mutate(ace_score = rowSums(select(., 
+                                     w1_bullied_in_last_year_binary,
+                                     w1_mental_disorder_family,
+                                     w1_death_of_parent,
+                                     neglectful_parent_style,
+                                     w1_parent_in_prison,
+                                     w1_conflict_between_parents,
+                                     w1_drug_taking_alcoholism_immediate_family,
+                                     w1_stay_in_foster_or_residential_care,
+                                     w1_death_of_close_family_member,
+                                     w1_divorce_separation_parents,
+                                     w1_serious_illness_injury,
+                                     w1_difficulty_making_ends_meet_binary) == 1))
+
+
+#View variable
+         
+table (df_joined$ace_score)
+```
+#Create GROUP variable
+
+```{r}
+df_joined <- df_joined %>%
+  mutate(group = case_when(
+    neurotypical == 1 ~ "Neurotypical",
+    asd_no_intellectual_disability == 1 ~ "ASD No ID",
+    asd_and_intellectual_disability_combined == 1 ~ "ASD with ID"
+    
+  ))
+
+df_joined <- df_joined %>% 
+  mutate(group = replace_na(group, "Other")) %>% 
+  mutate(group = factor(group))
+
+table(df_joined$group)
+
+# Creating a frequency table for ACE scores by group
+ace_score_table <- table(df_joined$group, df_joined$ace_score)
+
+# Viewing the table
+print(ace_score_table)
+```
+
+#Create ACE Category
+```{r}
+
+df_joined <- df_joined %>%
+  mutate(ace_category = case_when(
+    ace_score == 0 ~ "0 ACEs",
+    ace_score == 1 ~ "1 ACE",
+    ace_score == 2 ~ "2 ACEs",
+    ace_score >= 3 ~ "3+ ACEs"
+  ))
+
+                              
+contingency_table <- table(df_joined$ace_category, df_joined$w4_yp_dep_status)
+
+# Print the table
+print(contingency_table)
+
+```
+
+# Convert w4_yp_dep_status to integer
+```{r}
+
+df_joined$w4_yp_dep_status <- as.integer(df_joined$w4_yp_dep_status)
+
+```
+`
+
+
+#Replace df_joined with df
+```{r}
+df <- df_joined
+rm(df_joined)
+
+```
+
+
+
+
+
+```{r}
+#Rename and remove
+
+
+df <- df %>%
+  rename(w1_parent_gender = mma2, w1_respondent_rel_to_study_child = mma3, w1_study_child_age = m_magep2)
+    
+  df <- df %>%
+rename (identified_specific_learning_difficulty_communication_coordination_disorder = mmj21)
+ 
+   df <- df %>%   
+ rename (w2_parent_age = p1agew2, w2_parent_sex = p1sexw2) 
+      df <- df %>% 
+   rename ( w2_child_sex = p2sexw2, w2_child_age = p2agew2)
+       
+   df <- df %>%
+     rename (w1_main_carer_sdq_hyper = mmh2_sd_qhyper)
+      
+      
+df <- df %>%
+  rename (w3_child_sex = p2sex_w3, w3_child_age = p2age_w3)
+    
+      df <- df %>%   
+    select (!p1relcw2)
+   
+         df <- df %>%  
+    select (!w2_specific_learning_disability)
+         
+         df <-df %>% 
+           select (!pc2e15b)
+        
+df <- df %>%
+ select (!mma5ap1) 
+
+df <- df %>%
+ select (!mma5rcp1) 
+
+df <- df %>%
+ select (!mma5pesp1)
+
+df <- df %>%
+ select (!mma5pesp2) 
+
+df <- df %>%
+ select (!mmh1n:mmh1o) 
+
+df <- df %>%
+ select (!w1_bullied_in_last_year) 
+
+
+df <- df %>%
+ select (!tc2) 
+
+df <- df %>%
+ select (!w1_difficulty_making_ends_meet) 
+
+
+df <- df %>%
+ select (!parentstylem:parentstylemp) 
+
+
+df <- df %>%
+ select (!w2_general_learning_disability:w2_other_difficulty_diagnosed_professional) 
+
+df <- df %>%
+ select (!w2_specific_learning_disability_combined:w2_other_condition_disability_combined) 
+
+df <- df %>%
+ select (!w3_general_intellectual_disability:w3_general_learning_disability_combined) 
+
+
+
+df <- df %>% 
+    rename (w1_parent_age = m_magep1)
+
+
+df <- df %>% 
+   rename (w3_relationship_to_study_child =p2relm_w3)
+
+df <- df %>% 
+   rename (w1_study_child_sex = study_child_gender)
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```
+
+
+```
+
+

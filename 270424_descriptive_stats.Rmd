@@ -1,0 +1,671 @@
+---
+title: "270424_descriptive_stats"
+author: "Niamh Moran"
+date: "2024-04-27"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#load packages
+```{r}
+library(vcd)  
+library(tidyverse)
+library(ggplot2)
+library (dplyr)
+library(tidyverse)
+library(ggstats)
+library(openxlsx)
+library (boot)
+library(dplyr)
+library(janitor)
+library(haven)
+library(mediation)
+
+load("/Users/niamhmoran/Desktop/R_WD/GUI/GUI/March_scripts/clean_data_040424.Rdata")
+
+
+```
+Demographics table - wave 1
+```{r}
+table (df$group)
+table (df$group, df$w1_study_child_sex)
+table (df$group, df$e_inc_quin)
+```
+#Descriptives Wave 2
+```{r}
+# Filter the data frame for those present at wave 2 and then create a table for the 'group' column
+df_present_w2 <- df %>%
+  filter(present_w2 == TRUE) # Filter for presence at wave 2
+  
+table (df_present_w2$group)
+table (df_present_w2$group, df_present_w2$w1_study_child_sex)
+table (df_present_w2 $group, df_present_w2 $e_inc_quin)
+```
+```{r}
+# Filter the data frame for those present at wave 3 and then create a table for the 'group' column
+df_present_w3 <- df %>%
+  filter(xxwave3.x == 1) # Filter for presence at wave 2
+  
+
+table (df_present_w3$group)
+table (df_present_w3$group, df_present_w3$w1_study_child_sex)
+table (df_present_w3$group, df_present_w3$e_inc_quin)
+```
+#Descriptives at Wave 4
+```{r}
+# Filter the data frame for those present at wave 2 and then create a table for the 'group' column
+df_present_w4 <- df %>%
+  filter(present_w4 == TRUE) # Filter for presence at wave 2
+  
+table (df_present_w4$group)
+table (df_present_w4$group, df_present_w4$w1_study_child_sex)
+table (df_present_w4$group, df_present_w4$e_inc_quin)
+
+```
+#Test to see if there are significant differences in gender between groups
+
+
+```{r}
+
+df %>% 
+  filter(group == "ASD with ID" | group == "TD") %>%
+  filter(w1_study_child_sex == "Male" | group == "Female") %>%
+  mutate(group = fct_drop(group)) %>%  # we need to get rid of the unused factor levels
+  mutate(w1_study_child_sex = fct_drop(w1_study_child_sex)) %>%  # we need to get rid of the unused factor levels
+  dplyr::select(group, w1_study_child_sex) %>% # we select our two categorical variables to pipe into the test
+  table() %>% # we create a table for chisq
+  chisq.test() # we run the test
+
+
+```
+#Test to see if there are significant differences in gender between groups
+```{r}
+# Data preparation and Chi-squared test
+results <- df %>%
+  filter(group %in% c("ASD No ID", "TD")) %>%
+  mutate(group = fct_drop(group)) %>%  # we need to get rid of the unused factor levels
+  dplyr::select(group, e_inc_quin) %>%
+  table() %>%
+  chisq.test()
+
+
+# Print results of Chi-squared test
+print(results)
+
+# Calculate and print Cramer's V using assocstats from vcd package
+cramers_v_results <- assocstats(results$observed)
+print(cramers_v_results)
+
+```
+#Test to see if there are significant differences in income between groups
+```{r}
+# Data preparation and Chi-squared test
+results <- df %>%
+  filter(group %in% c("ASD with ID", "TD")) %>%
+  mutate(group = fct_drop(group)) %>%  # we need to get rid of the unused factor levels
+  dplyr::select(group, e_inc_quin) %>%
+  table() %>%
+  chisq.test()
+
+
+# Print results of Chi-squared test
+print(results)
+
+# Calculate and print Cramer's V using assocstats from vcd package
+cramers_v_results <- assocstats(results$observed)
+print(cramers_v_results)
+
+```
+
+#Check Contingency atble for income
+```{r}
+table (df$e_inc_quin, df$group)
+
+
+```
+
+#Tables for each ACE
+```{r}
+
+#No. 1 Bullying
+table (df$w1_bullied_in_last_year_binary, df$group)
+
+
+
+#No.2 Death of a close family member
+table (df$w1_death_of_close_family_member, df$group)
+
+
+#No.3 Economic Difficulty
+
+table (df$w1_difficulty_making_ends_meet_binary, df$group)
+
+#No. 4 Parental divorce/separation
+table (df$   w1_divorce_separation_parents, df$group)
+
+#No.5 Conflict between parents
+table (df$w1_conflict_between_parents, df$group)
+
+#No. 6 Serious illness or injury
+table (df$ w1_serious_illness_injury, df$group)
+
+#No. 7 Neglectful Parenting Style
+table (df$neglectful_parent_style, df$group)
+
+#No. 8 Mental disorder family
+
+table (df$  w1_mental_disorder_family, df$group)#Fisher's ASD ID only
+
+#No.9 Stay in Foster care
+table (df$w1_stay_in_foster_or_residential_care, df$group)#Fisher's ASD ID only
+
+#No.10 Death of a parent
+table (df$w1_death_of_parent, df$group) #Fishers
+
+#No.11 Drug taking alcohol immediate family
+table (df$w1_drug_taking_alcoholism_immediate_family, df$group)#Fishers
+
+#No.12 parent in prsion
+table (df$w1_parent_in_prison, df$group)#Fishers
+
+
+
+```
+#No. 1 Bullying - Chi Squared
+```{r}
+
+
+df %>% 
+  filter(group == "ASD No ID" | group == "TD") %>% # we select just ASD and TD
+  mutate(group = fct_drop(group)) %>%  # we need to get rid of the unused factor levels
+  dplyr::select(group, w1_bullied_in_last_year_binary) %>% # we select our two categorical variables to pipe into the test
+  table() %>% # we create a table for chisq
+  chisq.test() # we run the test
+
+#Cramers V is used to calculate effect size statistcial power may be influenced by large sample
+# Adjust the pipeline to get the table for Cramér's V calculation
+table_data <- df %>%
+  filter(group == "ASD No ID" | group == "TD")%>%
+  mutate(group = fct_drop(group))  %>%
+  dplyr::select(group,w1_bullied_in_last_year_binary) %>%
+  table()
+
+
+# Calculate Chi-squared statistics and Cramér's V
+assoc_results <- assocstats(table_data)
+print(assoc_results)
+
+
+
+
+df %>% 
+  filter(group == "ASD with ID" | group == "TD") %>% # we select just ASD and TD
+  mutate(group = fct_drop(group)) %>%  # we need to get rid of the unused factor levels
+  dplyr::select(group, w1_bullied_in_last_year_binary) %>% # we select our two categorical variables to pipe into the test
+  table() %>% # we create a table for chisq
+  chisq.test() # we run the test
+
+
+
+
+#Cramers V is used to calculate effect size statistcial power may be influenced by large sample
+# Adjust the pipeline to get the table for Cramér's V calculation
+table_data <- df %>%
+  filter(group == "ASD with ID" | group == "TD")%>%
+  mutate(group = fct_drop(group))  %>%
+  dplyr::select(group,w1_bullied_in_last_year_binary) %>%
+  table()
+
+
+# Calculate Chi-squared statistics and Cramér's V
+assoc_results <- assocstats(table_data)
+print(assoc_results)
+
+```
+
+#Death of close family member
+```{r}
+
+
+df %>% 
+  filter(group == "ASD No ID" | group == "TD") %>% # we select just ASD and TD
+  mutate(group = fct_drop(group)) %>%  # we need to get rid of the unused factor levels
+  dplyr::select(group, w1_death_of_close_family_member) %>% # we select our two categorical variables to pipe into the test
+  table() %>% # we create a table for chisq
+  chisq.test() # we run the test
+
+#Cramers V is used to calculate effect size statistcial power may be influenced by large sample
+# Adjust the pipeline to get the table for Cramér's V calculation
+table_data <- df %>%
+  filter(group == "ASD No ID" | group == "TD")%>%
+  mutate(group = fct_drop(group))  %>%
+  dplyr::select(group,w1_death_of_close_family_member) %>%
+  table()
+
+
+# Calculate Chi-squared statistics and Cramér's V
+assoc_results <- assocstats(table_data)
+print(assoc_results)
+
+
+
+
+df %>% 
+  filter(group == "ASD with ID" | group == "TD") %>% # we select just ASD and TD
+  mutate(group = fct_drop(group)) %>%  # we need to get rid of the unused factor levels
+  dplyr::select(group, w1_death_of_close_family_member) %>% # we select our two categorical variables to pipe into the test
+  table() %>% # we create a table for chisq
+  chisq.test() # we run the test
+
+
+
+
+#Cramers V is used to calculate effect size statistcial power may be influenced by large sample
+# Adjust the pipeline to get the table for Cramér's V calculation
+table_data <- df %>%
+  filter(group == "ASD with ID" | group == "TD")%>%
+  mutate(group = fct_drop(group))  %>%
+  dplyr::select(group,w1_death_of_close_family_member) %>%
+  table()
+
+
+# Calculate Chi-squared statistics and Cramér's V
+assoc_results <- assocstats(table_data)
+print(assoc_results)
+
+```
+
+#No. 3 Economic difficlty 
+```{r}
+#Economic Difficulty
+df %>% 
+  filter(group == "ASD No ID" | group == "TD") %>% # we select just ASD and TD
+  mutate(group = fct_drop(group)) %>%  # we need to get rid of the unused factor levels
+  dplyr::select(group, w1_difficulty_making_ends_meet_binary) %>% # we select our two categorical variables to pipe into the test
+  table() %>% # we create a table for chisq
+  chisq.test() # we run the test
+
+#Cramers V is used to calculate effect size statistcial power may be influenced by large sample
+# Adjust the pipeline to get the table for Cramér's V calculation
+table_data <- df %>%
+  filter(group == "ASD No ID" | group == "TD")%>%
+  mutate(group = fct_drop(group))  %>%
+  dplyr::select(group,w1_difficulty_making_ends_meet_binary) %>%
+  table()
+
+
+# Calculate Chi-squared statistics and Cramér's V
+assoc_results <- assocstats(table_data)
+print(assoc_results)
+
+
+
+df %>% 
+  filter(group == "ASD with ID" | group == "TD") %>% # we select just ASD and TD
+  mutate(group = fct_drop(group)) %>%  # we need to get rid of the unused factor levels
+  dplyr::select(group, w1_difficulty_making_ends_meet_binary) %>% # we select our two categorical variables to pipe into the test
+  table() %>% # we create a table for chisq
+  chisq.test() # we run the test
+
+#Cramers V is used to calculate effect size statistcial power may be influenced by large sample
+# Adjust the pipeline to get the table for Cramér's V calculation
+table_data <- df %>%
+  filter(group == "ASD with ID" | group == "TD")%>%
+  mutate(group = fct_drop(group))  %>%
+  dplyr::select(group,w1_difficulty_making_ends_meet_binary) %>%
+  table()
+
+
+# Calculate Chi-squared statistics and Cramér's V
+assoc_results <- assocstats(table_data)
+print(assoc_results)
+```
+
+#No. 4 Parental divorce/separation
+```{r}
+df %>% 
+  filter(group == "ASD No ID" | group == "TD") %>% # we select just ASD and TD
+  mutate(group = fct_drop(group)) %>%  # we need to get rid of the unused factor levels
+  dplyr::select(group, w1_divorce_separation_parents) %>% # we select our two categorical variables to pipe into the test
+  table() %>% # we create a table for chisq
+  chisq.test() # we run the test
+
+#Cramers V is used to calculate effect size statistcial power may be influenced by large sample
+# Adjust the pipeline to get the table for Cramér's V calculation
+table_data <- df %>%
+  filter(group == "ASD No ID" | group == "TD")%>%
+  mutate(group = fct_drop(group))  %>%
+  dplyr::select(group,w1_divorce_separation_parents) %>%
+  table()
+
+
+# Calculate Chi-squared statistics and Cramér's V
+assoc_results <- assocstats(table_data)
+print(assoc_results)
+
+
+
+df %>% 
+  filter(group == "ASD with ID" | group == "TD") %>% # we select just ASD and TD
+  mutate(group = fct_drop(group)) %>%  # we need to get rid of the unused factor levels
+  dplyr::select(group, w1_divorce_separation_parents) %>% # we select our two categorical variables to pipe into the test
+  table() %>% # we create a table for chisq
+  chisq.test() # we run the test
+
+
+
+
+#Cramers V is used to calculate effect size statistcial power may be influenced by large sample
+# Adjust the pipeline to get the table for Cramér's V calculation
+table_data <- df %>%
+  filter(group == "ASD with ID" | group == "TD")%>%
+  mutate(group = fct_drop(group))  %>%
+  dplyr::select(group,w1_divorce_separation_parents) %>%
+  table()
+
+
+# Calculate Chi-squared statistics and Cramér's V
+assoc_results <- assocstats(table_data)
+print(assoc_results)
+
+```
+
+#No.5 Conflict between parents
+```{r}
+
+df %>% 
+  filter(group == "ASD No ID" | group == "TD") %>% # we select just ASD and TD
+  mutate(group = fct_drop(group)) %>%  # we need to get rid of the unused factor levels
+  dplyr::select(group, w1_conflict_between_parents) %>% # we select our two categorical variables to pipe into the test
+  table() %>% # we create a table for chisq
+  chisq.test() # we run the test
+
+#Cramers V is used to calculate effect size statistcial power may be influenced by large sample
+# Adjust the pipeline to get the table for Cramér's V calculation
+table_data <- df %>%
+  filter(group == "ASD No ID" | group == "TD")%>%
+  mutate(group = fct_drop(group))  %>%
+  dplyr::select(group,w1_conflict_between_parents) %>%
+  table()
+
+
+# Calculate Chi-squared statistics and Cramér's V
+assoc_results <- assocstats(table_data)
+print(assoc_results)
+
+df %>% 
+  filter(group == "ASD with ID" | group == "TD") %>% # we select just ASD and TD
+  mutate(group = fct_drop(group)) %>%  # we need to get rid of the unused factor levels
+  dplyr::select(group, w1_conflict_between_parents) %>% # we select our two categorical variables to pipe into the test
+  table() %>% # we create a table for chisq
+  chisq.test() # we run the test
+
+
+
+
+#Cramers V is used to calculate effect size statistcial power may be influenced by large sample
+# Adjust the pipeline to get the table for Cramér's V calculation
+table_data <- df %>%
+  filter(group == "ASD with ID" | group == "TD")%>%
+  mutate(group = fct_drop(group))  %>%
+  dplyr::select(group,w1_conflict_between_parents) %>%
+  table()
+
+# Calculate Chi-squared statistics and Cramér's V
+assoc_results <- assocstats(table_data)
+print(assoc_results)
+
+```
+
+#No. 6 Serious illness or injury
+#Serious illness
+```{r}
+df %>% 
+  filter(group == "ASD No ID" | group == "TD") %>% # we select just ASD and TD
+  mutate(group = fct_drop(group)) %>%  # we need to get rid of the unused factor levels
+  dplyr::select(group, w1_serious_illness_injury) %>% # we select our two categorical variables to pipe into the test
+  table() %>% # we create a table for chisq
+  chisq.test() # we run the test
+
+#Cramers V is used to calculate effect size statistcial power may be influenced by large sample
+# Adjust the pipeline to get the table for Cramér's V calculation
+table_data <- df %>%
+  filter(group == "ASD No ID" | group == "TD")%>%
+  mutate(group = fct_drop(group))  %>%
+  dplyr::select(group,w1_serious_illness_injury) %>%
+  table()
+
+
+# Calculate Chi-squared statistics and Cramér's V
+assoc_results <- assocstats(table_data)
+print(assoc_results)
+
+
+
+df %>% 
+  filter(group == "ASD with ID" | group == "TD") %>% # we select just ASD and TD
+  mutate(group = fct_drop(group)) %>%  # we need to get rid of the unused factor levels
+  dplyr::select(group, w1_serious_illness_injury) %>% # we select our two categorical variables to pipe into the test
+  table() %>% # we create a table for chisq
+  chisq.test() # we run the test
+
+
+
+
+#Cramers V is used to calculate effect size statistcial power may be influenced by large sample
+# Adjust the pipeline to get the table for Cramér's V calculation
+table_data <- df %>%
+  filter(group == "ASD with ID" | group == "TD")%>%
+  mutate(group = fct_drop(group))  %>%
+  dplyr::select(group,w1_serious_illness_injury) %>%
+  table()
+
+
+# Calculate Chi-squared statistics and Cramér's V
+assoc_results <- assocstats(table_data)
+print(assoc_results)
+
+
+```
+
+#No. 7 Neglectful Parenting Style
+```{r}
+
+df %>% 
+  filter(group == "ASD No ID" | group == "TD") %>% # we select just ASD and TD
+  mutate(group = fct_drop(group)) %>%  # we need to get rid of the unused factor levels
+  dplyr::select(group, neglectful_parent_style) %>% # we select our two categorical variables to pipe into the test
+  table() %>% # we create a table for chisq
+  chisq.test() # we run the test
+
+#Cramers V is used to calculate effect size statistcial power may be influenced by large sample
+# Adjust the pipeline to get the table for Cramér's V calculation
+table_data <- df %>%
+  filter(group == "ASD No ID" | group == "TD")%>%
+  mutate(group = fct_drop(group))  %>%
+  dplyr::select(group,neglectful_parent_style) %>%
+  table()
+
+
+# Calculate Chi-squared statistics and Cramér's V
+assoc_results <- assocstats(table_data)
+print(assoc_results)
+
+
+
+
+df %>% 
+  filter(group == "ASD with ID" | group == "TD") %>% # we select just ASD and TD
+  mutate(group = fct_drop(group)) %>%  # we need to get rid of the unused factor levels
+  dplyr::select(group, neglectful_parent_style) %>% # we select our two categorical variables to pipe into the test
+  table() %>% # we create a table for chisq
+  chisq.test() # we run the test
+
+
+
+
+#Cramers V is used to calculate effect size statistcial power may be influenced by large sample
+# Adjust the pipeline to get the table for Cramér's V calculation
+table_data <- df %>%
+  filter(group == "ASD with ID" | group == "TD")%>%
+  mutate(group = fct_drop(group))  %>%
+  dplyr::select(group,neglectful_parent_style) %>%
+  table()
+
+
+# Calculate Chi-squared statistics and Cramér's V
+assoc_results <- assocstats(table_data)
+print(assoc_results)
+
+```
+
+#No. 8 Mental disorder family
+#Mental disorder family
+```{r}
+df %>% 
+  filter(group == "ASD No ID" | group == "TD") %>% # we select just ASD and TD
+  mutate(group = fct_drop(group)) %>%  # we need to get rid of the unused factor levels
+  dplyr::select(group, w1_mental_disorder_family) %>% # we select our two categorical variables to pipe into the test
+  table() %>% # we create a table for chisq
+  chisq.test() # we run the test
+
+#Cramers V is used to calculate effect size statistcial power may be influenced by large sample
+# Adjust the pipeline to get the table for Cramér's V calculation
+table_data <- df %>%
+  filter(group == "ASD No ID" | group == "TD")%>%
+  mutate(group = fct_drop(group))  %>%
+  dplyr::select(group,w1_mental_disorder_family) %>%
+  table()
+
+
+# Calculate Chi-squared statistics and Cramér's V
+assoc_results <- assocstats(table_data)
+print(assoc_results)
+
+
+
+# Create the contingency table and perform Fisher's exact test
+fisher_test_result <- df %>%
+  filter(group == "ASD with ID" | group == "TD") %>%
+  mutate(group = fct_drop(group)) %>%
+  dplyr::select(group, w1_mental_disorder_family) %>%
+  table() %>%
+  fisher.test()
+
+# Print the results of Fisher's exact test
+print(fisher_test_result)
+
+
+```
+
+#No.9 Stay in Foster care - Fishers
+```{r}
+
+# Create the contingency table and perform Fisher's exact test
+fisher_test_result <- df %>%
+  filter(group == "ASD No ID" | group == "TD") %>%
+  mutate(group = fct_drop(group)) %>%
+  dplyr::select(group, w1_stay_in_foster_or_residential_care) %>%
+  table() %>%
+  fisher.test()
+
+# Print the results of Fisher's exact test
+print(fisher_test_result)
+
+# Create the contingency table and perform Fisher's exact test
+fisher_test_result <- df %>%
+  filter(group == "ASD with ID" | group == "TD") %>%
+  mutate(group = fct_drop(group)) %>%
+  dplyr::select(group, w1_stay_in_foster_or_residential_care) %>%
+  table() %>%
+  fisher.test()
+
+# Print the results of Fisher's exact test
+print(fisher_test_result)
+
+```
+#No.10 Death of a parent
+```{r}
+# Create the contingency table and perform Fisher's exact test
+fisher_test_result <- df %>%
+  filter(group == "ASD No ID" | group == "TD") %>%
+  mutate(group = fct_drop(group)) %>%
+  dplyr::select(group, w1_death_of_parent) %>%
+  table() %>%
+  fisher.test()
+
+
+# Print the results of Fisher's exact test
+print(fisher_test_result)
+
+# Create the contingency table and perform Fisher's exact test
+fisher_test_result <- df %>%
+  filter(group == "ASD with ID" | group == "TD") %>%
+  mutate(group = fct_drop(group)) %>%
+  dplyr::select(group, w1_death_of_parent) %>%
+  table() %>%
+  fisher.test()
+
+# Print the results of Fisher's exact test
+print(fisher_test_result)
+
+```
+#No.11 Drug taking alcohol immediate family
+
+```{r}
+# Create the contingency table and perform Fisher's exact test
+fisher_test_result <- df %>%
+  filter(group == "ASD No ID" | group == "TD") %>%
+  mutate(group = fct_drop(group)) %>%
+  dplyr::select(group, w1_drug_taking_alcoholism_immediate_family) %>%
+  table() %>%
+  fisher.test()
+
+
+# Print the results of Fisher's exact test
+print(fisher_test_result)
+
+# Create the contingency table and perform Fisher's exact test
+fisher_test_result <- df %>%
+  filter(group == "ASD with ID" | group == "TD") %>%
+  mutate(group = fct_drop(group)) %>%
+  dplyr::select(group, w1_drug_taking_alcoholism_immediate_family) %>%
+  table() %>%
+  fisher.test()
+
+# Print the results of Fisher's exact test
+print(fisher_test_result)
+
+```
+#No.12 Parent in prison
+
+```{r}
+# Create the contingency table and perform Fisher's exact test
+fisher_test_result <- df %>%
+  filter(group == "ASD No ID" | group == "TD") %>%
+  mutate(group = fct_drop(group)) %>%
+  dplyr::select(group, w1_parent_in_prison) %>%
+  table() %>%
+  fisher.test()
+
+
+# Print the results of Fisher's exact test
+print(fisher_test_result)
+
+# Create the contingency table and perform Fisher's exact test
+fisher_test_result <- df %>%
+  filter(group == "ASD with ID" | group == "TD") %>%
+  mutate(group = fct_drop(group)) %>%
+  dplyr::select(group, w1_parent_in_prison) %>%
+  table() %>%
+  fisher.test()
+
+# Print the results of Fisher's exact test
+print(fisher_test_result)
+
+```
+
+
